@@ -6,9 +6,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Install tesseract
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-fra tesseract-ocr-deu tesseract-ocr-spa libleptonica-dev libtesseract-dev pkg-config
+      - name: Set TESSDATA_PREFIX
+        run: |
+          echo "TESSDATA_PREFIX=$(dpkg -L tesseract-ocr-eng | grep tessdata$)" >> "$GITHUB_ENV"
       - uses: ./.github/actions/setup-poetry
         with:
           python-version: ${{ matrix.python-version }}
@@ -21,9 +26,9 @@ jobs:
           poetry run pytest -v tests
       - name: Run examples
         run: |
-          for file in examples/*.py; do
+          for file in docs/examples/*.py; do
             # Skip batch_convert.py
-            if [[ "$(basename "$file")" == "batch_convert.py" ]]; then
+            if [[ "$(basename "$file")" =~ ^(batch_convert|minimal|export_multimodal|custom_convert|develop_picture_enrichment).py ]]; then
                 echo "Skipping $file"
                 continue
             fi

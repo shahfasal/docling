@@ -1,26 +1,13 @@
 name: "Run CD"
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 env:
   # disable keyring (https://github.com/actions/runner-images/issues/6185):
   PYTHON_KEYRING_BACKEND: keyring.backends.null.Keyring
 
 jobs:
-  # To be enabled when we add docs
-  # docs:
-  #   permissions:
-  #     contents: write
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: ./.github/actions/setup-poetry
-  #     - name: Build and push docs
-  #       run: poetry run mkdocs gh-deploy --force
-
   code-checks:
     uses: ./.github/workflows/checks.yml
   pre-release-check:
@@ -28,7 +15,7 @@ jobs:
     outputs:
       TARGET_TAG_V: ${{ steps.version_check.outputs.TRGT_VERSION }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # for fetching tags, required for semantic-release
       - uses: ./.github/actions/setup-poetry
